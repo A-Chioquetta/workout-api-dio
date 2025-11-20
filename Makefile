@@ -1,8 +1,13 @@
+APP=workout_api.main:app
+
 run:
-	@uvicorn workout_api.main:app --reload
+	@echo "🚀 Iniciando API..."
+	@poetry run uvicorn $(APP) --reload
 
 create-migrations:
-	@PYTHONPATH=$PYTHONPAH:$(pwd) alembic revision --autogenerate -m "$(m)"
+	@echo "📦 Criando migração: $(m)"
+	@poetry run alembic revision --autogenerate -m "$(m)"
 
 run-migrations:
-	@PYTHONPATH=$PYTHONPAH:$(pwd) alembic upgrade head
+	@echo "🔧 Executando migrações..."
+	@poetry run alembic upgrade head

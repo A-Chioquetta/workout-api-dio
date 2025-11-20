@@ -50,7 +50,7 @@ async def query(
 
 @router.get(
     "/{id}",
-    summary="Consultar um Centro de Treinamento pelo ID",
+    summary="Consultar um Centro de Treinamento pelo ID e proprietário(a)",
     status_code=status.HTTP_200_OK,
     response_model=CentroTreinamentoOut,
 )
@@ -60,11 +60,7 @@ async def query_by_id(
     db_session: DataBaseDependency,
 ) -> CentroTreinamentoOut:
     centro_treinamento: CentroTreinamentoOut = (
-        (
-            await db_session.execute(
-                select(CentroTreinamentoModel).filter_by(id=id, proprietario=proprietario.capitalize())
-            )
-        )
+        (await db_session.execute(select(CentroTreinamentoModel).filter_by(id=id, proprietario=proprietario)))
         .scalars()
         .first()
     )
@@ -72,7 +68,56 @@ async def query_by_id(
     if not centro_treinamento:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Centro de Treinamento não encontrado para o id {id} e proprietario(a) {proprietario.capitalize()}",
+            detail=f"Centro de Treinamento não encontrado para o id {id} e proprietario(a) {proprietario}",
         )
 
     return centro_treinamento
+
+
+@router.put(
+    "/{id}",
+    summary="Atualizar um Centro de Treinamento pelo ID",
+    status_code=status.HTTP_200_OK,
+    response_model=CentroTreinamentoOut,
+)
+async def update(
+    id: UUID4,
+    db_session: DataBaseDependency,
+    centro_treinamento_in: CentroTreinamentoIn = Body(...),
+) -> CentroTreinamentoOut:
+    centro_treinamento = (await db_session.execute(select(CentroTreinamentoModel).filter_by(id=id))).scalars().first()
+
+    if not centro_treinamento:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Centro de Treinamento não encontrado para o id {id}",
+        )
+
+    for key, value in centro_treinamento_in.model_dump().items():
+        setattr(centro_treinamento, key, value)
+
+    await db_session.commit()
+    await db_session.refresh(centro_treinamento)
+
+    return centro_treinamento
+
+
+@router.delete(
+    "/{id}",
+    summary="Deletar um Centro de Treinamento pelo ID",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete(
+    id: UUID4,
+    db_session: DataBaseDependency,
+) -> None:
+    centro_treinamento = (await db_session.execute(select(CentroTreinamentoModel).filter_by(id=id))).scalars().first()
+
+    if not centro_treinamento:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Centro de Treinamento não encontrado para o id {id}",
+        )
+
+    await db_session.delete(centro_treinamento)
+    await db_session.commit()
