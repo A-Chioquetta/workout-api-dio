@@ -3,7 +3,7 @@ name = "workoutapi"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "Your Name",email = "you@example.com"}
+    {name = "Alessandra Chioquetta",email = "alessandra.chioquetta@gmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.12, <4.0"
